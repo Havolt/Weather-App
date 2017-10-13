@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Weather API</title>
+    <style>
+
+    body,html{
+      font-family: arial;
+      background-color: #f7f7f7;
+    }
+
+    h2{
+      font-size: 2em;
+      text-align: center;
+    }
+
+    #pic{
+
+      display: block;
+      margin: 0 auto;
+      width: 50px;
+    }
+
+    #tempHold{
+      width: 200px;
+      margin: 0 auto;
+      background-color: black;
+    }
+
+    #degType{
+      color: blue;
+      float:left;
+      cursor: pointer;
+    }
+
+    #temperature{
+      float: left;
+      display: inline-block;
+    }
+
+    </style>
+  </head>
+  <body>
+
+
+    <div id="app">
+      <h2 id="areaOfAccess"></h2>
+      <div id="tempHold">
+        <h2 id="temperature" ></h2><h2 id="degType" onclick="toFahr()"></h2>
+      </div>
+      </br>
+      </br>
+    </br></br>
+      <h2 id="weatherType"></h2>
+      <div id="pic"></div>
+    </div>
+
+    <script>
+
+    var geog;
+    var weatherApi = new XMLHttpRequest();
+    var weatherInfo;
+    var degFahr;
+    var degCel;
+    var deg;
+    var degDisplay;
+    var areaOfAccess = document.getElementById('areaOfAccess');
+    var temperature = document.getElementById('temperature');
+    var weatherType = document.getElementById('weatherType');
+    var pic = document.getElementById('pic');
+    var cel = true;
+    var degType = document.getElementById('degType');
+
+    navigator.geolocation.getCurrentPosition(success);
+
+    function success(pos){
+      geog = pos.coords;
+    }
+
+    function geoTrue(){
+      if(geog){
+        console.log('yatta!');
+        getApi();
+      }
+      else{
+        console.log('nope');
+        setTimeout(geoTrue, 600);
+      }
+    }
+
+    function getApi(){
+      weatherApi.open('GET', 'https://fcc-weather-api.glitch.me/api/current?lat=' + geog.latitude + '&lon='+ geog.longitude);
+      weatherApi.onload = function(){
+        weatherInfo = JSON.parse(weatherApi.responseText);
+        console.log(weatherInfo);
+        buildSite();
+      };
+      weatherApi.send();
+    }
+
+    function buildSite(){
+      areaOfAccess.innerHTML = weatherInfo.name + ', ' + weatherInfo.sys.country;
+      temperature.innerHTML = weatherInfo.main.temp + ' &#176';
+      degType.innerHTML = 'C';
+      deg = parseFloat(weatherInfo.main.temp);
+      weatherType.innerHTML = weatherInfo.weather['0'].main + ', ' + weatherInfo.weather['0'].description;
+      var picto = document.createElement('img');
+      picto.src= weatherInfo.weather['0'].icon;
+      pic.appendChild(picto);
+    }
+
+    function toFahr(){
+
+      if(deg && cel){
+        degCel = deg;
+        deg = (deg * 1.8) + 32;
+        degFahr = deg;
+        degDisplay = deg.toFixed(2);
+        temperature.innerHTML = degDisplay + ' &#176';
+        degType.innerHTML = 'F';
+        cel = false;
+      }
+      else if(deg && !cel){
+        deg = degCel;
+        degDisplay = degCel;
+        temperature.innerHTML = degDisplay + ' &#176';
+        degType.innerHTML = 'C';
+        cel = true;
+      }
+    }
+
+    geoTrue();
+
+
+    </script>
+
+  </body>
+</html>
